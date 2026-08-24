@@ -23,54 +23,56 @@ import {
   CheckCircle2,
   Target,
   Megaphone,
-  Share2,
   AlertCircle,
   FileText,
-  DollarSign
+  ShieldAlert
 } from "lucide-react";
+import type {
+  LocalizeRequest,
+  LocalizeResponse,
+  LocalizedItem,
+  MarketType,
+  ObjectiveType,
+  ChannelType,
+  SourceLanguageType,
+  ToneType
+} from "@/types/localize";
 
-interface LocalizedResult {
-  country: string;
-  flag: string;
-  lang: string;
-  headline: string;
-  content: string;
-  adaptedCta: string;
-  localKeywords: string[];
-  notes: {
-    cultural: string;
-    currencyAndSeasonal: string;
-    toneAndStyle: string;
-  };
+interface ValidationErrors {
+  campaignName?: boolean;
+  content?: boolean;
+  sourceLang?: boolean;
+  markets?: boolean;
+  tone?: boolean;
 }
 
 const MARKETS = [
-  { id: "br", name: "Brasil", flag: "🇧🇷", lang: "Português (BR)", currency: "BRL (R$)" },
-  { id: "us", name: "Estados Unidos", flag: "🇺🇸", lang: "Inglês (US)", currency: "USD ($)" },
-  { id: "mx", name: "México", flag: "🇲🇽", lang: "Espanhol (MX)", currency: "MXN ($)" },
-  { id: "de", name: "Alemanha", flag: "🇩🇪", lang: "Alemão (DE)", currency: "EUR (€)" },
+  { id: "BR", name: "Brasil", flag: "🇧🇷", lang: "Português (BR)" },
+  { id: "US", name: "Estados Unidos", flag: "🇺🇸", lang: "Inglês (US)" },
+  { id: "MX", name: "México", flag: "🇲🇽", lang: "Espanhol (MX)" },
+  { id: "DE", name: "Alemanha", flag: "🇩🇪", lang: "Alemão (DE)" },
 ];
 
-const GOALS = [
-  { id: "vendas", label: "Vendas Diretas" },
+const GOALS: { id: ObjectiveType; label: string }[] = [
+  { id: "sales", label: "Vendas Diretas" },
   { id: "leads", label: "Geração de Leads" },
-  { id: "brand", label: "Reconhecimento de Marca" },
-  { id: "retencao", label: "Retenção & Fidelização" },
+  { id: "awareness", label: "Reconhecimento de Marca" },
+  { id: "retention", label: "Retenção & Fidelização" },
 ];
 
-const CHANNELS = [
+const CHANNELS: { id: ChannelType; label: string }[] = [
   { id: "instagram", label: "Instagram" },
   { id: "email", label: "E-mail Marketing" },
-  { id: "google-ads", label: "Google Ads" },
-  { id: "landing-page", label: "Landing Page" },
+  { id: "google_ads", label: "Google Ads" },
+  { id: "landing_page", label: "Landing Page" },
   { id: "whatsapp", label: "WhatsApp" },
 ];
 
-const TONES = [
-  { id: "profissional", label: "Profissional & Corporativo" },
-  { id: "persuasivo", label: "Persuasivo & Vendas (Copywriting)" },
-  { id: "descontraido", label: "Descontraído & Moderno" },
-  { id: "tecnico", label: "Técnico & Especialista" },
+const TONES: { id: ToneType; label: string }[] = [
+  { id: "professional", label: "Profissional & Corporativo" },
+  { id: "persuasive", label: "Persuasivo & Vendas (Copywriting)" },
+  { id: "casual", label: "Descontraído & Moderno" },
+  { id: "technical", label: "Técnico & Especialista" },
 ];
 
 export default function DashboardPage() {
@@ -81,109 +83,176 @@ export default function DashboardPage() {
   const [campaignName, setCampaignName] = useState("Lançamento Global Q3");
   const [productName, setProductName] = useState("LocalizeAI Platform");
   const [targetAudience, setTargetAudience] = useState("CEOs, Diretores de Marketing e Gestores de Growth");
-  const [goal, setGoal] = useState("vendas");
-  const [channel, setChannel] = useState("instagram");
+  const [goal, setGoal] = useState<ObjectiveType>("sales");
+  const [channel, setChannel] = useState<ChannelType>("instagram");
   const [offer, setOffer] = useState("20% de desconto na assinatura anual + 14 dias de teste grátis");
 
   // Content & localization parameters
   const [content, setContent] = useState(
     "Acelere seu crescimento com nossa plataforma de automação e inteligência artificial. Teste grátis por 14 dias sem cartão de crédito!"
   );
-  const [sourceLang, setSourceLang] = useState("pt-BR");
-  const [selectedMarkets, setSelectedMarkets] = useState<string[]>(["us", "mx", "de"]);
-  const [tone, setTone] = useState("persuasivo");
+  const [sourceLang, setSourceLang] = useState<SourceLanguageType>("pt-BR");
+  const [selectedMarkets, setSelectedMarkets] = useState<MarketType[]>(["US", "MX", "DE"]);
+  const [tone, setTone] = useState<ToneType>("persuasive");
   const [keywords, setKeywords] = useState("SaaS, IA, Automação, Crescimento");
 
-  // Output states
+  // Validation & Error states
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [validationErrorMsg, setValidationErrorMsg] = useState<string | null>(null);
+
+  // Output & API states
   const [isGenerating, setIsGenerating] = useState(false);
-  const [results, setResults] = useState<LocalizedResult[] | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [results, setResults] = useState<LocalizedItem[] | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const toggleMarket = (marketId: string) => {
-    if (selectedMarkets.includes(marketId)) {
-      if (selectedMarkets.length > 1) {
-        setSelectedMarkets(selectedMarkets.filter((id) => id !== marketId));
+  const clearFieldError = (field: keyof ValidationErrors) => {
+    if (validationErrors[field]) {
+      const updated = { ...validationErrors, [field]: false };
+      setValidationErrors(updated);
+      if (!Object.values(updated).some(Boolean)) {
+        setValidationErrorMsg(null);
       }
-    } else {
-      setSelectedMarkets([...selectedMarkets, marketId]);
     }
   };
 
-  const handleGenerate = () => {
-    if (!content.trim()) return;
-
-    setIsGenerating(true);
-    setResults(null);
-
-    setTimeout(() => {
-      const mockData: Record<string, LocalizedResult> = {
-        br: {
-          country: "Brasil",
-          flag: "🇧🇷",
-          lang: "Português (BR)",
-          headline: `Impulsione o crescimento da sua marca com ${productName || "LocalizeAI"}`,
-          content: `${content}\n\n👉 Aproveite esta oferta exclusiva para o mercado brasileiro e transforme sua operação com total segurança.`,
-          adaptedCta: offer ? `Garantir 20% OFF + 14 Dias Grátis em R$` : "Iniciar Teste Grátis no Brasil",
-          localKeywords: ["#MarketingDigital", "#SaaSBrasil", "#GrowthHack", "#LocalizeAI"],
-          notes: {
-            cultural: "Tom direto e engajador com forte apelo visual para redes sociais.",
-            currencyAndSeasonal: "Preços e valores convertidos em Reais (BRL R$).",
-            toneAndStyle: "Estilo persuasivo orientado a conversão em canais móveis.",
-          },
-        },
-        us: {
-          country: "Estados Unidos",
-          flag: "🇺🇸",
-          lang: "Inglês (US)",
-          headline: `Supercharge your B2B revenue growth with ${productName || "LocalizeAI"}`,
-          content: `Accelerate your pipeline and streamline team productivity with enterprise-grade copy adaptation.\n\nBuilt for high-growth tech companies scaling internationally.`,
-          adaptedCta: offer ? `Claim 20% Off Annual Plan + 14-Day Free Trial` : "Start Free Trial (No Credit Card)",
-          localKeywords: ["#B2BGrowth", "#RevenueOperations", "#ScaleUp", "#MarketingAI"],
-          notes: {
-            cultural: "Foco claro em métricas de ROI, eficiência e aceleração de receita (Revenue Operations).",
-            currencyAndSeasonal: "Valores em Dólares (USD $) sem taxas ocultas.",
-            toneAndStyle: "Linguagem direta e assertiva característica do mercado de tecnologia americano.",
-          },
-        },
-        mx: {
-          country: "México",
-          flag: "🇲🇽",
-          lang: "Espanhol (MX)",
-          headline: `Impulsa las ventas de tu empresa con la tecnología de ${productName || "LocalizeAI"}`,
-          content: `Optimiza tus campañas de marketing e incrementa la tasa de conversión en toda América Latina.\n\nPrueba la solución líder para equipos de alto rendimiento.`,
-          adaptedCta: offer ? `Obtén 20% de Descuento + 14 Días Gratis` : "Comienza tu Prueba Gratuita Hoy",
-          localKeywords: ["#MarketingLATAM", "#EstrategiaDigital", "#NegociosMx", "#LocalizeAI"],
-          notes: {
-            cultural: "Espanhol latino-americano empresarial com vocabulário regional de vendas.",
-            currencyAndSeasonal: "Preços adaptados em Pesos Mexicanos (MXN $) ou Dólares globais.",
-            toneAndStyle: "Tom profissional, convidativo e focado na construção de relacionamento.",
-          },
-        },
-        de: {
-          country: "Alemanha",
-          flag: "🇩🇪",
-          lang: "Alemão (DE)",
-          headline: `Skalieren Sie Ihr Unternehmen mit präziser KI-Technologie von ${productName || "LocalizeAI"}`,
-          content: `Steigern Sie die Effizienz Ihrer Marketingprozesse nahtlos und datenschutzkonform.\n\nEntwickelt für höchste Ansprüche an Qualität und Sicherheit.`,
-          adaptedCta: offer ? `Jetzt 20% Rabatt & 14 Tage Kostenlos Testen` : "Jetzt DSGVO-Konform Testen",
-          localKeywords: ["#DSGVO", "#EnterpriseSoftware", "#B2BMarketing", "#InnovationDE"],
-          notes: {
-            cultural: "Forma de tratamento cortês e formal (Sie-Form), enfatizando precisão e confiabilidade.",
-            currencyAndSeasonal: "Valores em Euros (EUR €) com menção explícita de conformidade DSGVO (GDPR).",
-            toneAndStyle: "Tom sóbrio, altamente técnico e baseado em dados e conformidade legal.",
-          },
-        },
-      };
-
-      const filtered = selectedMarkets.map((id) => mockData[id]).filter(Boolean);
-      setResults(filtered);
-      setIsGenerating(false);
-    }, 1200);
+  const toggleMarket = (marketId: MarketType) => {
+    let updatedMarkets: MarketType[];
+    if (selectedMarkets.includes(marketId)) {
+      updatedMarkets = selectedMarkets.filter((id) => id !== marketId);
+    } else {
+      updatedMarkets = [...selectedMarkets, marketId];
+    }
+    setSelectedMarkets(updatedMarkets);
+    if (updatedMarkets.length > 0) {
+      clearFieldError("markets");
+    }
   };
 
-  const handleCopy = (res: LocalizedResult, index: number) => {
-    const formattedText = `=== LOCALIZEAI: ${res.country.toUpperCase()} (${res.lang}) ===\nTítulo: ${res.headline}\n\nConteúdo:\n${res.content}\n\nCTA Adaptado: ${res.adaptedCta}\nHashtags/SEO: ${res.localKeywords.join(" ")}\n\nNotas de Adaptação:\n- Cultural: ${res.notes.cultural}\n- Moeda/Sazonalidade: ${res.notes.currencyAndSeasonal}\n- Tom: ${res.notes.toneAndStyle}\n\n[Revise informações legais, preços e disponibilidade antes de publicar.]`;
-    
+  const handleGenerate = async () => {
+    // Client-side Validation Check
+    const errors: ValidationErrors = {};
+
+    if (!campaignName.trim()) {
+      errors.campaignName = true;
+    }
+    if (!content.trim()) {
+      errors.content = true;
+    }
+    if (!sourceLang) {
+      errors.sourceLang = true;
+    }
+    if (!selectedMarkets || selectedMarkets.length === 0) {
+      errors.markets = true;
+    }
+    if (!tone) {
+      errors.tone = true;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+
+      let msg = "Por favor, preencha todos os campos obrigatórios antes de gerar.";
+      if (errors.campaignName && errors.content) {
+        msg = "Preencha o nome da campanha e o conteúdo original antes de gerar.";
+      } else if (errors.campaignName) {
+        msg = "Preencha o nome da campanha antes de gerar.";
+      } else if (errors.content) {
+        msg = "Preencha o conteúdo original antes de gerar.";
+      } else if (errors.markets) {
+        msg = "Selecione pelo menos um mercado de destino antes de gerar.";
+      } else if (errors.sourceLang) {
+        msg = "Selecione o idioma de origem antes de gerar.";
+      } else if (errors.tone) {
+        msg = "Selecione o tom de voz antes de gerar.";
+      }
+
+      setValidationErrorMsg(msg);
+
+      // Scroll to first invalid field and set focus
+      const firstInvalidId = errors.campaignName
+        ? "input-campaign-name"
+        : errors.content
+        ? "content-input"
+        : errors.markets
+        ? "input-markets-container"
+        : errors.sourceLang
+        ? "select-source-lang"
+        : errors.tone
+        ? "select-tone"
+        : null;
+
+      if (firstInvalidId) {
+        const element = document.getElementById(firstInvalidId);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          if ("focus" in element && typeof element.focus === "function") {
+            element.focus();
+          }
+        }
+      }
+
+      return; // Stop execution, DO NOT fetch
+    }
+
+    // Clear validation if valid
+    setValidationErrors({});
+    setValidationErrorMsg(null);
+
+    setIsGenerating(true);
+    setErrorMessage(null);
+    setResults(null);
+
+    const parsedKeywords = keywords
+      .split(",")
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0);
+
+    const payload: LocalizeRequest = {
+      campaignName,
+      product: productName,
+      audience: targetAudience,
+      objective: goal,
+      channel,
+      offer,
+      content,
+      sourceLanguage: sourceLang,
+      markets: selectedMarkets,
+      tone,
+      keywords: parsedKeywords,
+    };
+
+    try {
+      const response = await fetch("/api/localize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Ocorreu um erro ao chamar a API de localização.");
+      }
+
+      const resData = data as LocalizeResponse;
+      setResults(resData.results);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage("Erro inesperado de comunicação com a API.");
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopy = (res: LocalizedItem, index: number) => {
+    const formattedText = `=== LOCALIZEAI: ${res.country.toUpperCase()} (${res.language}) ===\nTítulo: ${res.localizedTitle}\n\nConteúdo:\n${res.localizedContent}\n\nCTA Adaptado: ${res.localizedCta}\nHashtags/SEO: ${res.keywords.join(" ")}\n\nNotas de Adaptação:\n- Cultural: ${res.adaptationNotes.cultural}\n- Moeda/Sazonalidade: ${res.adaptationNotes.currencyAndSeasonal}\n- Tom: ${res.adaptationNotes.toneAndStyle}\n\n[Revise informações legais, preços e disponibilidade antes de publicar.]`;
+
     navigator.clipboard.writeText(formattedText);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
@@ -285,13 +354,13 @@ export default function DashboardPage() {
               <Sparkles className="w-6 h-6 text-cyan-400" />
             </h1>
             <p className="text-sm sm:text-base text-slate-400 mt-1">
-              Defina o briefing de marketing, selecione os países-alvo e gere versões perfeitamente adaptadas ao mercado global.
+              Defina o briefing de marketing, selecione os países-alvo e chame a API interna para gerar versões personalizadas.
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Motor IA 4.0 Ativo
+            API /api/localize Ativa
           </div>
         </div>
 
@@ -309,20 +378,38 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Campaign Name */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Nome da Campanha</label>
+                  <label htmlFor="input-campaign-name" className="text-xs font-semibold text-slate-300">
+                    Nome da Campanha *
+                  </label>
                   <input
+                    id="input-campaign-name"
                     type="text"
                     value={campaignName}
-                    onChange={(e) => setCampaignName(e.target.value)}
+                    onChange={(e) => {
+                      setCampaignName(e.target.value);
+                      if (e.target.value.trim()) clearFieldError("campaignName");
+                    }}
                     placeholder="Ex: Lançamento Global Q3"
-                    className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
+                    className={`w-full p-3 rounded-xl bg-slate-950 border text-slate-200 text-sm focus:outline-none transition-all ${
+                      validationErrors.campaignName
+                        ? "border-rose-500 ring-1 ring-rose-500/50"
+                        : "border-slate-800 focus:border-indigo-500"
+                    }`}
                   />
+                  {validationErrors.campaignName && (
+                    <span className="text-[11px] font-semibold text-rose-400">
+                      O nome da campanha é obrigatório.
+                    </span>
+                  )}
                 </div>
 
                 {/* Product Name */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Produto ou Serviço Promovido</label>
+                  <label htmlFor="input-product-name" className="text-xs font-semibold text-slate-300">
+                    Produto ou Serviço Promovido
+                  </label>
                   <input
+                    id="input-product-name"
                     type="text"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
@@ -350,7 +437,7 @@ export default function DashboardPage() {
                   <label className="text-xs font-semibold text-slate-300">Objetivo da Campanha</label>
                   <select
                     value={goal}
-                    onChange={(e) => setGoal(e.target.value)}
+                    onChange={(e) => setGoal(e.target.value as ObjectiveType)}
                     className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
                   >
                     {GOALS.map((g) => (
@@ -366,7 +453,7 @@ export default function DashboardPage() {
                   <label className="text-xs font-semibold text-slate-300">Canal de Publicação</label>
                   <select
                     value={channel}
-                    onChange={(e) => setChannel(e.target.value)}
+                    onChange={(e) => setChannel(e.target.value as ChannelType)}
                     className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
                   >
                     {CHANNELS.map((c) => (
@@ -399,7 +486,7 @@ export default function DashboardPage() {
               <label htmlFor="content-input" className="text-sm font-semibold text-slate-200 flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-cyan-400" />
-                  Conteúdo Original para Localização
+                  Conteúdo Original para Localização *
                 </span>
                 <span className="text-xs text-slate-400">{content.length} caracteres</span>
               </label>
@@ -407,32 +494,58 @@ export default function DashboardPage() {
                 id="content-input"
                 rows={4}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (e.target.value.trim()) clearFieldError("content");
+                }}
                 placeholder="Cole aqui seu anúncio, e-mail de vendas, post para redes sociais ou cópia do site..."
-                className="w-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-sm leading-relaxed resize-y"
+                className={`w-full p-4 rounded-xl bg-slate-950 border text-slate-100 placeholder-slate-500 focus:outline-none text-sm leading-relaxed resize-y transition-all ${
+                  validationErrors.content
+                    ? "border-rose-500 ring-1 ring-rose-500/50"
+                    : "border-slate-800 focus:border-indigo-500"
+                }`}
               />
+              {validationErrors.content && (
+                <span className="text-[11px] font-semibold text-rose-400">
+                  O conteúdo original é obrigatório.
+                </span>
+              )}
             </div>
 
             {/* Markets Selection */}
-            <div className="p-6 rounded-2xl glass-panel border border-slate-800/80 space-y-4">
+            <div
+              id="input-markets-container"
+              tabIndex={-1}
+              className={`p-6 rounded-2xl glass-panel border transition-all space-y-4 focus:outline-none ${
+                validationErrors.markets
+                  ? "border-rose-500 ring-1 ring-rose-500/50"
+                  : "border-slate-800/80"
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
                   <Globe className="w-4 h-4 text-cyan-400" />
-                  Seleção de Mercados de Alvo
+                  Seleção de Mercados de Alvo *
                 </label>
                 <span className="text-xs text-slate-400">
                   {selectedMarkets.length} {selectedMarkets.length === 1 ? "país selecionado" : "países selecionados"}
                 </span>
               </div>
 
+              {validationErrors.markets && (
+                <span className="text-[11px] font-semibold text-rose-400 block">
+                  Selecione pelo menos um mercado de destino.
+                </span>
+              )}
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {MARKETS.map((m) => {
-                  const isSelected = selectedMarkets.includes(m.id);
+                  const isSelected = selectedMarkets.includes(m.id as MarketType);
                   return (
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() => toggleMarket(m.id)}
+                      onClick={() => toggleMarket(m.id as MarketType)}
                       className={`p-3.5 rounded-xl border text-left flex flex-col gap-1 transition-all cursor-pointer ${
                         isSelected
                           ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-500/10"
@@ -463,31 +576,52 @@ export default function DashboardPage() {
 
               {/* Source Language */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                <label htmlFor="select-source-lang" className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                   <Languages className="w-3.5 h-3.5" />
-                  Idioma de Origem
+                  Idioma de Origem *
                 </label>
                 <select
+                  id="select-source-lang"
                   value={sourceLang}
-                  onChange={(e) => setSourceLang(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
+                  onChange={(e) => {
+                    setSourceLang(e.target.value as SourceLanguageType);
+                    if (e.target.value) clearFieldError("sourceLang");
+                  }}
+                  className={`w-full p-3 rounded-xl bg-slate-950 border text-slate-200 text-sm focus:outline-none transition-all ${
+                    validationErrors.sourceLang
+                      ? "border-rose-500 ring-1 ring-rose-500/50"
+                      : "border-slate-800 focus:border-indigo-500"
+                  }`}
                 >
                   <option value="pt-BR">Português (Brasil)</option>
                   <option value="en-US">Inglês (Estados Unidos)</option>
                   <option value="es-ES">Espanhol (Espanha)</option>
                 </select>
+                {validationErrors.sourceLang && (
+                  <span className="text-[11px] font-semibold text-rose-400">
+                    O idioma de origem é obrigatório.
+                  </span>
+                )}
               </div>
 
               {/* Tone of Voice */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                <label htmlFor="select-tone" className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                   <Wand2 className="w-3.5 h-3.5 text-cyan-400" />
-                  Tom de Voz
+                  Tom de Voz *
                 </label>
                 <select
+                  id="select-tone"
                   value={tone}
-                  onChange={(e) => setTone(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500"
+                  onChange={(e) => {
+                    setTone(e.target.value as ToneType);
+                    if (e.target.value) clearFieldError("tone");
+                  }}
+                  className={`w-full p-3 rounded-xl bg-slate-950 border text-slate-200 text-sm focus:outline-none transition-all ${
+                    validationErrors.tone
+                      ? "border-rose-500 ring-1 ring-rose-500/50"
+                      : "border-slate-800 focus:border-indigo-500"
+                  }`}
                 >
                   {TONES.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -495,6 +629,11 @@ export default function DashboardPage() {
                     </option>
                   ))}
                 </select>
+                {validationErrors.tone && (
+                  <span className="text-[11px] font-semibold text-rose-400">
+                    O tom de voz é obrigatório.
+                  </span>
+                )}
               </div>
 
               {/* Keywords */}
@@ -513,16 +652,24 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Client-Side Validation Error Box */}
+            {validationErrorMsg && (
+              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-3 text-rose-300 text-sm animate-in fade-in duration-200 shadow-lg">
+                <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                <div className="flex-1 font-semibold">{validationErrorMsg}</div>
+              </div>
+            )}
+
             {/* Action Submit Button */}
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || !content.trim()}
+              disabled={isGenerating}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 disabled:opacity-50 text-white font-bold text-base shadow-xl shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin text-white" />
-                  <span>Processando estratégia de localização...</span>
+                  <span>Chamando API /api/localize...</span>
                 </>
               ) : (
                 <>
@@ -535,15 +682,25 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Mocked Results Section */}
+        {/* API Error Alert Message */}
+        {errorMessage && (
+          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-3 text-rose-300 text-sm animate-in fade-in duration-200">
+            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0" />
+            <div className="flex-1">
+              <span className="font-bold">Erro de requisição API:</span> {errorMessage}
+            </div>
+          </div>
+        )}
+
+        {/* Mocked Results Section from API Response */}
         {isGenerating && (
           <div className="p-12 rounded-2xl glass-panel border border-slate-800 text-center space-y-4 animate-in fade-in duration-300">
             <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/30 mx-auto flex items-center justify-center text-indigo-400">
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
-            <h3 className="text-lg font-bold text-white">Processando inteligência cultural para {selectedMarkets.length} mercados...</h3>
+            <h3 className="text-lg font-bold text-white">Solicitando respostas da rota POST /api/localize...</h3>
             <p className="text-sm text-slate-400 max-w-md mx-auto">
-              Nossa IA está adaptando o tom de voz, inserindo chamadas para ação específicas da região e ajustando normas legais e de moeda.
+              A API está validando os parâmetros do briefing e gerando as respostas personalizadas para os {selectedMarkets.length} mercados selecionados.
             </p>
           </div>
         )}
@@ -553,9 +710,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                Campanha Localizada: {campaignName} ({results.length} Países)
+                Respostas da API /api/localize ({results.length} Países)
               </h2>
-              <span className="text-xs text-slate-400">Pronto para publicação</span>
+              <span className="text-xs text-slate-400">Dados retornados pela API interna</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -575,10 +732,10 @@ export default function DashboardPage() {
                             <div className="text-sm font-bold text-white flex items-center gap-2">
                               {res.country}
                               <span className="text-[10px] font-normal px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                {res.lang}
+                                {res.language}
                               </span>
                             </div>
-                            <div className="text-[11px] text-slate-400">Canal: {CHANNELS.find(c => c.id === channel)?.label || "Digital"}</div>
+                            <div className="text-[11px] text-slate-400">Código Mercado: {res.market}</div>
                           </div>
                         </div>
 
@@ -607,9 +764,9 @@ export default function DashboardPage() {
                       {/* Main Copy Headline */}
                       <div className="space-y-1">
                         <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">
-                          Título Adaptado
+                          Título Localizado (API)
                         </span>
-                        <h4 className="text-base font-bold text-white leading-snug">{res.headline}</h4>
+                        <h4 className="text-base font-bold text-white leading-snug">{res.localizedTitle}</h4>
                       </div>
 
                       {/* Main Content Text */}
@@ -618,7 +775,7 @@ export default function DashboardPage() {
                           Texto Localizado
                         </span>
                         <p className="text-sm text-slate-300 whitespace-pre-line leading-relaxed p-3.5 rounded-xl bg-slate-950 border border-slate-800/80">
-                          {res.content}
+                          {res.localizedContent}
                         </p>
                       </div>
 
@@ -629,7 +786,7 @@ export default function DashboardPage() {
                           <span>CTA Adaptado:</span>
                         </div>
                         <span className="text-xs font-bold text-cyan-300 bg-slate-950 px-2.5 py-1 rounded border border-cyan-500/30">
-                          {res.adaptedCta}
+                          {res.localizedCta}
                         </span>
                       </div>
 
@@ -639,7 +796,7 @@ export default function DashboardPage() {
                           Hashtags & Palavras-chave Locais
                         </span>
                         <div className="flex flex-wrap gap-1.5">
-                          {res.localKeywords.map((kw, i) => (
+                          {res.keywords.map((kw, i) => (
                             <span key={i} className="text-xs font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
                               {kw}
                             </span>
@@ -655,18 +812,26 @@ export default function DashboardPage() {
                         <div className="space-y-1.5 text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">
                           <div className="flex items-start gap-2">
                             <span className="text-cyan-400 font-bold">•</span>
-                            <span><strong className="text-slate-300">Cultural & Idioma:</strong> {res.notes.cultural}</span>
+                            <span><strong className="text-slate-300">Cultural:</strong> {res.adaptationNotes.cultural}</span>
                           </div>
                           <div className="flex items-start gap-2">
                             <span className="text-emerald-400 font-bold">•</span>
-                            <span><strong className="text-slate-300">Moeda & Sazonalidade:</strong> {res.notes.currencyAndSeasonal}</span>
+                            <span><strong className="text-slate-300">Moeda & Sazonalidade:</strong> {res.adaptationNotes.currencyAndSeasonal}</span>
                           </div>
                           <div className="flex items-start gap-2">
                             <span className="text-indigo-400 font-bold">•</span>
-                            <span><strong className="text-slate-300">Tom & Estilo:</strong> {res.notes.toneAndStyle}</span>
+                            <span><strong className="text-slate-300">Tom & Estilo:</strong> {res.adaptationNotes.toneAndStyle}</span>
                           </div>
                         </div>
                       </div>
+
+                      {/* Human Review Status Badge */}
+                      {res.needsHumanReview && (
+                        <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                          <span>Revisão por especialista nativo recomendada para este mercado.</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

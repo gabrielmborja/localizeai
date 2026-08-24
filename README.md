@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LocalizeAI — Plataforma de Localização Cultural de Conteúdo
 
-## Getting Started
+O **LocalizeAI** é uma plataforma SaaS desenvolvida em Next.js 16 para adaptar conteúdos de marketing (anúncios, e-mails, posts e landing pages) para múltiplos idiomas e mercados internacionais.
 
-First, run the development server:
+---
+
+## 🚀 Como Executar Localmente
 
 ```bash
+# Instalar dependências
+npm install
+
+# Rodar o servidor de desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Compilar para produção
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Navegue em seu navegador em:
+- **Landing Page Pública**: [http://localhost:3000](http://localhost:3000)
+- **Dashboard do Produto**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📡 Rota de API Interna: `POST /api/localize`
 
-## Learn More
+A rota `/api/localize` processa o briefing da campanha de marketing e retorna versões localizadas personalizadas para os mercados selecionados.
 
-To learn more about Next.js, take a look at the following resources:
+### 📋 Requisição (`POST /api/localize`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Headers**:
+```http
+Content-Type: application/json
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Exemplo de Payload JSON**:
 
-## Deploy on Vercel
+```json
+{
+  "campaignName": "Lançamento Global Q3",
+  "product": "LocalizeAI Platform",
+  "audience": "CEOs, Diretores de Marketing e Gestores de Growth",
+  "objective": "sales",
+  "channel": "instagram",
+  "offer": "20% OFF na assinatura anual + 14 dias grátis",
+  "content": "Acelere seu crescimento com nossa plataforma de automação e inteligência artificial. Teste grátis por 14 dias sem cartão de crédito!",
+  "sourceLanguage": "pt-BR",
+  "markets": ["BR", "US", "MX", "DE"],
+  "tone": "persuasive",
+  "keywords": ["SaaS", "IA", "Automação", "Crescimento"]
+}
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### Campos do Payload:
+- `campaignName` *(obrigatório, string)*: Nome da campanha.
+- `content` *(obrigatório, string)*: Texto ou cópia original para localização.
+- `sourceLanguage` *(obrigatório, string)*: Idioma original (`pt-BR`, `en-US`, `es-ES`).
+- `markets` *(obrigatório, array)*: Lista dos códigos de mercado de destino (`BR`, `US`, `MX`, `DE`).
+- `tone` *(obrigatório, string)*: Tom de voz (`professional`, `persuasive`, `casual`, `technical`).
+- `product` *(opcional, string)*: Nome do produto ou serviço.
+- `audience` *(opcional, string)*: Descrição do público-alvo.
+- `objective` *(opcional, string)*: `sales` | `leads` | `awareness` | `retention`.
+- `channel` *(opcional, string)*: `instagram` | `email` | `google_ads` | `landing_page` | `whatsapp`.
+- `offer` *(opcional, string)*: Oferta comercial ou call-to-action de destaque.
+- `keywords` *(opcional, array de strings)*: Palavras-chave para otimização de SEO local.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+### 📥 Exemplo de Resposta de Sucesso (`HTTP 200`)
+
+```json
+{
+  "success": true,
+  "campaignName": "Lançamento Global Q3",
+  "results": [
+    {
+      "market": "US",
+      "country": "Estados Unidos",
+      "flag": "🇺🇸",
+      "language": "Inglês (US)",
+      "localizedTitle": "Supercharge your enterprise revenue growth with LocalizeAI Platform",
+      "localizedContent": "Accelerate your pipeline and streamline team operations with LocalizeAI's enterprise-grade workflow engine.\n\nBuilt for high-growth tech teams scaling internationally.",
+      "localizedCta": "Claim Offer: 20% OFF na assinatura anual + 14 dias grátis",
+      "keywords": ["#B2BGrowth", "#RevenueOps", "#ScaleUp", "#SaaS", "#IA"],
+      "adaptationNotes": {
+        "cultural": "Foco estrito em métricas de ROI, eficiência operacional e facilidade de onboarding.",
+        "currencyAndSeasonal": "Valores em Dólares Norte-Americanos (USD $).",
+        "toneAndStyle": "Comunicação assertiva e objetiva típica do mercado B2B dos EUA."
+      },
+      "needsHumanReview": false
+    }
+  ]
+}
+```
+
+---
+
+### ⚠️ Exemplo de Resposta de Erro (`HTTP 400`)
+
+```json
+{
+  "error": "Campos obrigatórios ausentes ou inválidos: campaignName, content.",
+  "missingFields": ["campaignName", "content"]
+}
+```
