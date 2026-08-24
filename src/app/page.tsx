@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between overflow-hidden">
+    <main className="min-h-screen bg-[#070913] text-slate-100 flex flex-col justify-between overflow-hidden relative halo-mesh-grid">
       <Navbar />
       <div className="flex-1">
         <Hero />

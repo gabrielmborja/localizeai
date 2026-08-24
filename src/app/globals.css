@@ -2,89 +2,142 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: #070913;
+    --foreground: #f8fafc;
   }
 
   html {
     color-scheme: dark;
+    background-color: #070913;
+  }
+
+  body {
+    background-color: #070913;
+    color: #f8fafc;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #070913;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #1e293b;
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
 
-/* Glowing Background Effects & Animations */
-@keyframes pulseGlow {
+/* Ambient Radial Mesh Background Grid */
+.halo-mesh-grid {
+  background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Keyframe Animations */
+@keyframes floatSlow {
   0%, 100% {
-    opacity: 0.4;
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes haloPulse {
+  0%, 100% {
+    opacity: 0.35;
     transform: scale(1);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.05);
+    opacity: 0.65;
+    transform: scale(1.08);
   }
 }
 
-.animate-pulse-glow {
-  animation: pulseGlow 6s ease-in-out infinite;
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
 }
 
-/* Glassmorphism card utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.animate-halo-pulse {
+  animation: haloPulse 7s ease-in-out infinite;
 }
 
-.glass-panel-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Editorial Typography & Gradients */
+.editorial-title {
+  letter-spacing: -0.03em;
+  line-height: 1.08;
 }
 
-.glass-panel-hover:hover {
-  background: rgba(30, 41, 59, 0.75);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.25);
-  transform: translateY(-2px);
+.editorial-sub {
+  letter-spacing: -0.01em;
 }
 
-.gradient-text {
+.gradient-text-halo {
+  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 35%, #818cf8 70%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-indigo {
   background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.gradient-border {
-  position: relative;
-  border-radius: 0.75rem;
+/* Halo Glassmorphism Cards */
+.glass-panel-halo {
+  background: rgba(13, 17, 30, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.gradient-border::before {
+.glass-panel-halo-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-halo-hover:hover {
+  background: rgba(22, 28, 48, 0.85);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 25px 60px -12px rgba(99, 102, 241, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+/* CTA Halo Button Styling */
+.btn-halo-primary {
+  position: relative;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #06b6d4 100%);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-halo-primary::before {
   content: "";
   position: absolute;
-  inset: -1px;
-  border-radius: 0.8rem;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.5));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  inset: -2px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #818cf8, #38bdf8);
+  filter: blur(10px);
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.btn-halo-primary:hover::before {
+  opacity: 0.7;
+}
+
+.btn-halo-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.45);
 }

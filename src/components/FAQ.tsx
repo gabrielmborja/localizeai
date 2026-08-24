@@ -34,18 +34,18 @@ export default function FAQ() {
   };
 
   return (
-    <section id="faq" className="py-24 relative bg-slate-950">
+    <section id="faq" className="py-28 relative bg-[#070913]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel-halo border border-white/10 text-xs font-semibold text-indigo-300 uppercase tracking-wider">
             <HelpCircle className="w-3.5 h-3.5" />
             Tire Suas Dúvidas
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="editorial-title text-3xl sm:text-5xl font-extrabold text-white">
             Perguntas Frequentes
           </h2>
-          <p className="text-base sm:text-lg text-slate-400 max-w-xl mx-auto">
+          <p className="editorial-sub text-base sm:text-lg text-slate-400 max-w-xl mx-auto">
             Ainda tem dúvidas sobre como o LocalizeAI vai acelerar sua expansão global de marketing?
           </p>
         </div>
@@ -57,23 +57,23 @@ export default function FAQ() {
             return (
               <div
                 key={index}
-                className="glass-panel rounded-xl border border-slate-800 overflow-hidden transition-all duration-200"
+                className="glass-panel-halo rounded-2xl border border-white/10 overflow-hidden transition-all duration-300"
               >
                 <button
                   onClick={() => toggleAccordion(index)}
-                  className="w-full p-6 text-left flex items-center justify-between gap-4 hover:bg-slate-900/50 transition-colors focus:outline-none"
+                  className="w-full p-6 text-left flex items-center justify-between gap-4 hover:bg-white/5 transition-colors focus:outline-none cursor-pointer"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-base sm:text-lg font-bold text-white">
+                  <span className="text-base sm:text-lg font-bold text-white leading-snug">
                     {faq.question}
                   </span>
-                  <div className={`w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-indigo-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 bg-indigo-600 text-white border-indigo-500" : ""}`}>
+                  <div className={`w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-indigo-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 bg-indigo-600 text-white border-indigo-500" : ""}`}>
                     <ChevronDown className="w-4 h-4" />
                   </div>
                 </button>
 
                 {isOpen && (
-                  <div className="px-6 pb-6 pt-2 text-sm sm:text-base text-slate-300 border-t border-slate-800/60 leading-relaxed animate-in fade-in duration-200">
+                  <div className="px-6 pb-6 pt-2 text-sm sm:text-base text-slate-300 border-t border-white/5 leading-relaxed animate-in fade-in duration-200">
                     {faq.answer}
                   </div>
                 )}
@@ -83,10 +83,10 @@ export default function FAQ() {
         </div>
 
         {/* Still have questions CTA */}
-        <div className="mt-12 text-center p-8 rounded-2xl glass-panel border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="mt-12 text-center p-8 rounded-2xl glass-panel-halo border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4 text-left">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-cyan-500 p-0.5 shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <div className="w-full h-full bg-[#070913] rounded-[10px] flex items-center justify-center">
                 <MessageSquare className="w-6 h-6 text-cyan-400" />
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function FAQ() {
           </div>
           <a
             href="/dashboard"
-            className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-semibold text-sm transition-colors shrink-0"
+            className="px-6 py-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-white font-semibold text-sm transition-colors shrink-0"
           >
             Falar com Especialista
           </a>

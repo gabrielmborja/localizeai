@@ -8,24 +8,23 @@ export default function Pricing() {
   const [wordCount, setWordCount] = useState<number>(30); // em milhares de palavras (30k)
 
   const calculateSavings = (kWords: number) => {
-    // Estimativa de custo médio com agência de tradução (R$ 0,40 por palavra) vs LocalizeAI
     const agencyCostPerWord = 0.40;
     const monthlyAgencyCost = kWords * 1000 * agencyCostPerWord;
     return monthlyAgencyCost.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   };
 
   return (
-    <section id="precos" className="py-24 relative bg-slate-950/80 border-t border-slate-900">
+    <section id="precos" className="py-28 relative bg-[#070913]/90 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold uppercase tracking-wider">
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-14">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel-halo border border-white/10 text-xs font-semibold text-indigo-300 uppercase tracking-wider">
             Planos & Investimento
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Planos sob medida para <span className="gradient-text">expandir suas vendas</span>
+          <h2 className="editorial-title text-3xl sm:text-5xl font-extrabold text-white">
+            Planos sob medida para <span className="gradient-text-halo">expandir suas vendas</span>
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="editorial-sub text-base sm:text-lg text-slate-400">
             Cancele a qualquer momento. Sem fidelidade. Teste gratuitamente por 14 dias.
           </p>
 
@@ -36,7 +35,7 @@ export default function Pricing() {
             </span>
             <button
               onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
-              className="relative w-14 h-8 rounded-full bg-slate-800 p-1 transition-colors border border-slate-700 focus:outline-none"
+              className="relative w-14 h-8 rounded-full bg-slate-900 p-1 transition-colors border border-white/10 focus:outline-none cursor-pointer"
               aria-label="Alternar ciclo de cobrança"
             >
               <div
@@ -59,7 +58,7 @@ export default function Pricing() {
         {/* Pricing Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* Starter Plan */}
-          <div className="rounded-2xl glass-panel p-8 flex flex-col justify-between space-y-8 border border-slate-800 hover:border-slate-700 transition-colors">
+          <div className="rounded-2xl glass-panel-halo p-8 flex flex-col justify-between space-y-8 border border-white/10 hover:border-slate-700 transition-colors">
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white">Starter</h3>
@@ -99,7 +98,7 @@ export default function Pricing() {
 
             <a
               href="/dashboard"
-              className="w-full py-3.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-center transition-colors block"
+              className="w-full py-3.5 rounded-xl border border-white/10 bg-slate-900/80 hover:bg-slate-800 text-white font-semibold text-center transition-colors block"
             >
               Iniciar 14 Dias Grátis
             </a>
@@ -107,7 +106,7 @@ export default function Pricing() {
 
           {/* Pro Plan (Highlighted) */}
           <div className="relative rounded-2xl p-[2px] bg-gradient-to-b from-indigo-500 via-cyan-400 to-indigo-600 shadow-2xl shadow-indigo-500/20 transform lg:-translate-y-2">
-            <div className="w-full h-full rounded-[14px] bg-slate-950 p-8 flex flex-col justify-between space-y-8">
+            <div className="w-full h-full rounded-[14px] bg-[#080b18] p-8 flex flex-col justify-between space-y-8">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold text-white flex items-center gap-2">
@@ -158,7 +157,7 @@ export default function Pricing() {
 
               <a
                 href="/dashboard"
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-bold text-center shadow-lg shadow-indigo-500/30 transition-all block"
+                className="btn-halo-primary w-full py-3.5 rounded-xl text-white font-bold text-center block shadow-lg"
               >
                 Garantir 14 Dias Grátis
               </a>
@@ -166,7 +165,7 @@ export default function Pricing() {
           </div>
 
           {/* Enterprise Plan */}
-          <div className="rounded-2xl glass-panel p-8 flex flex-col justify-between space-y-8 border border-slate-800 hover:border-slate-700 transition-colors">
+          <div className="rounded-2xl glass-panel-halo p-8 flex flex-col justify-between space-y-8 border border-white/10 hover:border-slate-700 transition-colors">
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold text-white">Enterprise</h3>
@@ -202,8 +201,8 @@ export default function Pricing() {
             </div>
 
             <a
-              href="#contato"
-              className="w-full py-3.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-center transition-colors block"
+              href="/dashboard"
+              className="w-full py-3.5 rounded-xl border border-white/10 bg-slate-900/80 hover:bg-slate-800 text-white font-semibold text-center transition-colors block"
             >
               Falar com Especialista
             </a>
@@ -211,11 +210,11 @@ export default function Pricing() {
         </div>
 
         {/* Interactive ROI Calculator */}
-        <div className="mt-16 max-w-4xl mx-auto glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
+        <div className="mt-16 max-w-4xl mx-auto glass-panel-halo rounded-2xl p-6 sm:p-8 border border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="space-y-3 flex-1">
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-indigo-400 uppercase tracking-wider">
-                <Calculator className="w-4 h-4" />
+                <Calculator className="w-4 h-4 text-cyan-400" />
                 Calculadora de Economia vs Agências Tradicionais
               </div>
               <h3 className="text-xl sm:text-2xl font-bold text-white">
@@ -244,7 +243,7 @@ export default function Pricing() {
             </div>
 
             {/* Result Box */}
-            <div className="w-full md:w-auto p-6 rounded-xl bg-gradient-to-br from-indigo-950/80 to-slate-900 border border-indigo-500/30 text-center space-y-2 shadow-xl">
+            <div className="w-full md:w-auto p-6 rounded-xl bg-gradient-to-br from-indigo-950/90 to-slate-900 border border-indigo-500/30 text-center space-y-2 shadow-xl">
               <span className="text-xs font-semibold text-slate-400 uppercase">Custo Tradicional Evitado</span>
               <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">
                 {calculateSavings(wordCount)}

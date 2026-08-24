@@ -21,7 +21,7 @@ const features = [
     icon: Search,
     title: "SEO por Mercado",
     description: "Alinha automaticamente palavras-chave de busca locais em cada idioma para garantir alto posicionamento no Google e motores de busca regionais.",
-    tag: "Tráfego Organico",
+    tag: "Tráfego Orgânico",
     color: "from-emerald-400 to-teal-600",
   },
   {
@@ -49,18 +49,18 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="recursos" className="py-24 relative bg-slate-950/60 border-t border-b border-slate-900">
+    <section id="recursos" className="py-28 relative border-t border-b border-white/5 bg-[#070913]/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel-halo border border-white/10 text-xs font-semibold text-indigo-300 uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
             Recursos Exclusivos de Localização
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Tudo o que sua equipe precisa para <span className="gradient-text">vender globalmente</span>
+          <h2 className="editorial-title text-3xl sm:text-5xl font-extrabold text-white">
+            Tudo o que sua equipe precisa para <span className="gradient-text-halo">vender globalmente</span>
           </h2>
-          <p className="text-base sm:text-lg text-slate-400">
+          <p className="editorial-sub text-base sm:text-lg text-slate-400">
             Elimine barreiras linguísticas e crie cópias de alta conversão adaptadas aos hábitos de consumo de cada região.
           </p>
         </div>
@@ -72,16 +72,16 @@ export default function Features() {
             return (
               <div
                 key={index}
-                className="group relative p-8 rounded-2xl glass-panel glass-panel-hover flex flex-col justify-between space-y-6"
+                className="group relative p-8 rounded-2xl glass-panel-halo glass-panel-halo-hover flex flex-col justify-between space-y-6"
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div className={`w-12 h-12 rounded-xl bg-gradient-to-tr ${item.color} p-0.5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                      <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                      <div className="w-full h-full bg-[#070913] rounded-[10px] flex items-center justify-center">
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                     </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800/80 text-slate-300 border border-slate-700">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-900/80 text-slate-300 border border-white/10">
                       {item.tag}
                     </span>
                   </div>
@@ -94,7 +94,7 @@ export default function Features() {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-800/60 flex items-center text-xs font-semibold text-indigo-400 group-hover:text-cyan-400 transition-colors">
+                <div className="pt-4 border-t border-white/5 flex items-center text-xs font-semibold text-indigo-400 group-hover:text-cyan-400 transition-colors">
                   Saiba mais sobre {item.title} →
                 </div>
               </div>
